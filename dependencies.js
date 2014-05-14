@@ -7,7 +7,8 @@ var log         = require('ee-log'),
 
 var extensions  = require('./lib/extensions'),
     renderer    = require('./lib/renderer'),
-    Container   = require('./lib/utils/Container');
+    Container   = require('./lib/utils/Container'),
+    config      = require('./config');
 
 /**
  * todo: implement them!
@@ -35,5 +36,5 @@ module.exports = new Container({
         ApiExtension:       new extensions.ApiExtension(api),
         LocaleExtension:    new extensions.LocaleExtension(locales)
     }
-    , config:               new Container(require('./config'))
+    , config:               new Container(config)
 });
