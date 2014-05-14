@@ -1,0 +1,20 @@
+{
+    "name": "ee-templates",
+    "description": "Templating integration for the ee-soa-transport-rest based on Nunjucks",
+    "version": "0.0.1",
+    "license": "MIT",
+    "author": "Michael Rüfenacht <ruefe@rcky.ch> (http://www.rcky.ch)",
+    "tags": [
+        "templating"
+    ],
+    "dependencies": {
+        "mocha": "1.18.*",
+        "nunjucks": "1.0.*",
+        "ee-log": "0.2.*",
+        "ee-class": "1.0.*",
+        "ee-event-emitter": "0.1.*"
+    },
+    "scripts": {
+        "test": "./node_modules/.bin/mocha --reporter spec --check-leaks"
+    }
+}
