@@ -1,32 +1,30 @@
 {
-    "name": "ee-templates",
-    "description": "Templating integration for the ee-soa-transport-rest based on Nunjucks",
-    "version": "0.0.1",
-    "license": "MIT",
-    "author": "Michael Rüfenacht <ruefe@rcky.ch> (http://www.rcky.ch)",
-    "homepage": "https://github.com/eventEmitter/ee-templates",
-    "repository": {
-        "url": "https://github.com/eventEmitter/ee-templates",
-        "type": "git"
-    },
-    "bugs": {
-        "url": "https://github.com/eventEmitter/ee-templates/issues"
-    },
-    "tags": [
+      "name"                    : "ee-templates"
+    , "description"             : "Templating integration for the ee-soa-transport-rest based on Nunjucks"
+    , "version"                 : "0.1.0"
+    , "license"                 : "MIT"
+    , "author"                  : "Michael Rüfenacht <ruefe@rcky.ch> (http://www.rcky.ch)"
+    , "homepage"                : "https://github.com/eventEmitter/ee-templates"
+    , "repository": {
+          "url"                 : "https://github.com/eventEmitter/ee-templates"
+        , "type"                : "git"
+    }
+    , "bugs": {
+        "url"                   : "https://github.com/eventEmitter/ee-templates/issues"
+    }
+    , "tags": [
         "templating"
-    ],
-    "dependencies": {
-        "mocha": "1.18.*",
-        "ee-log": "0.2.*",
-        "ee-class": "1.0.*",
-        "ee-event-emitter": "0.1.*"
-    },
-
-    "devDependencies": {
-        "nunjucks": "1.0.*"
-    },
-
-    "scripts": {
-        "test": "./node_modules/.bin/mocha --reporter spec --check-leaks"
+    ]
+    , "dependencies": {
+          "ee-log"              : "0.2.*"
+        , "ee-class"            : "1.0.*"
+        , "ee-event-emitter"    : "0.1.*"
+    }
+    , "devDependencies": {
+          "nunjucks"            : "1.0.*"
+        , "mocha"               : "1.18.*"
+    }
+    , "scripts": {
+        "test"                  : "./node_modules/.bin/mocha --reporter spec --check-leaks"
     }
 }
