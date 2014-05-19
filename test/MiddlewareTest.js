@@ -1,15 +1,18 @@
-var assert                  = require('assert');
+var assert                  = require('assert'),
+    nunjucks                = require('nunjucks');
 
-var TemplatingMiddleware    = require('../lib/TemplatingMiddleware'),
-    container               = require('../dependencies');
+var TemplatingMiddleware    = require('../lib/TemplatingMiddleware');
 
 var MockRequest             = require('./utils/MockRequest');
 
-/**
- * Modify the config to fit the test environment.
- */
+var loader  = new nunjucks.FileSystemLoader('./test/contents/test.ch/templates'),
+    env     = new nunjucks.Environment(loader, {tags: {variableStart: '{$', variableEnd: '$}'}, dev: true});
 
-container.get('config').set('rootFolder', 'test/contents');
+var container = {
+    get: function(key){
+        return env;
+    }
+};
 
 describe('Middleware', function(){
     describe('request', function(){
