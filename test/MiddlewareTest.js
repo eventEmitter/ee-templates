@@ -3,7 +3,8 @@ var assert                  = require('assert'),
 
 var TemplatingMiddleware    = require('../lib/TemplatingMiddleware');
 
-var MockRequest             = require('./utils/MockRequest');
+var MockRequest             = require('./utils/MockRequest'),
+    MockResponse            = require('./utils/MockResponse');
 
 var loader  = new nunjucks.FileSystemLoader('./test/contents/test.ch/templates'),
     env     = new nunjucks.Environment(loader, {tags: {variableStart: '{$', variableEnd: '$}'}, dev: true});
@@ -26,16 +27,22 @@ describe('Middleware', function(){
                 ]}
             );
 
-            var response = {};
+            var response = new MockResponse();
+
             middleware.request(request, response, function(){
                 it('should append a rendering method to the response', function(){
                     assert('render' in response);
                 });
 
-                response.render({ciao: 'Hallo'}, function(err, result){
+                response.render(200, {}, {ciao: 'Hallo'}, function(err){
                     it('which resolves the template and renders it', function(){
-                        assert(err==null);
-                        assert.equal('Hallo: Test succeeded.', result);
+                        assert.equal(err, null);
+                        assert.equal('Hallo: Test succeeded.', response.data);
+                    });
+
+                    it('should set the content type and the status correctly', function(){
+                        assert.equal('text/html; charset=utf8', response.contentType);
+                        assert.equal(200, response.status);
                     });
                 });
             });
@@ -49,13 +56,17 @@ describe('Middleware', function(){
                 ]}
             );
 
-            var response1 = {};
+            var response1 = new MockResponse();
 
             middleware.request(request1, response1, function(){
-                response1.render({test: 'succeeded'}, function(err, result){
+                response1.render(200, {}, {test: 'succeeded'}, function(err){
                     it('if the request has an accept value of application/json it should render it as json, and ignore the template', function(){
-                        assert(err==null);
-                        assert.equal('{"test":"succeeded"}', result);
+                        assert.equal(err, null);
+                        assert.equal('{"test":"succeeded"}', response1.data);
+                    });
+                    it('should set the content type and the status correctly', function(){
+                        assert.equal('application/json; charset=utf8', response1.contentType);
+                        assert.equal(200, response1.status);
                     });
                 });
             });
@@ -68,13 +79,39 @@ describe('Middleware', function(){
                 ]}
             );
 
-            var response1 = {};
+            var response1 = new MockResponse();
 
             middleware.request(request1, response1, function(){
-                response1.render({test: 'succeeded'}, function(err, result){
+                response1.render(200, {}, {test: 'succeeded'}, function(err){
                     it('if the request has another accept type it should fallback to json', function(){
                         assert(err==null);
-                        assert.equal('{"test":"succeeded"}', result);
+                        assert.equal('{"test":"succeeded"}', response1.data);
+                    });
+
+                    it('should set the content type and the status correctly', function(){
+                        assert.equal('application/json; charset=utf8', response1.contentType);
+                        assert.equal(200, response1.status);
+                    });
+                });
+            });
+        });
+
+        describe('on errors', function(){
+            var request1 = new MockRequest('test.ch', 'test.nunjuck.inexistent.html',
+                {'accept': [
+                    {key:'text', value: 'html'}
+                ]}
+            );
+
+            var response1 = new MockResponse();
+
+            middleware.request(request1, response1, function(){
+                response1.render(200, {}, {test: 'succeeded'}, function(err){
+                    it('if there happens an error during the rendering it is passed to the callback', function(){
+                        assert(!!err);
+                    });
+                    it('on error the response is equivalent to a server error', function(){
+                        assert.equal(response1.status, 500);
                     });
                 });
             });
