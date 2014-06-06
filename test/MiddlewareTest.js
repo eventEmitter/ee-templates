@@ -1,39 +1,22 @@
-var assert                  = require('assert'),
-    nunjucks                = require('nunjucks'),
-    log                     = require('ee-log');
+var   assert                  = require('assert')
+    , nunjucks                = require('nunjucks')
+    , log                     = require('ee-log');
 
-var TemplatingMiddleware    = require('../lib/TemplatingMiddleware');
+/**
+ * We use a nunjucks environment for the tests, since this will be our rendering engine of choice.
+ * The environments are injected from outside in a container. The HTML renderer chooses the environment based on
+ * the current domain. During the tests we use only a single environment and can therefore use a mock container.
+ */
 
-var MockRequest             = require('./utils/MockRequest'),
-    MockResponse            = require('./utils/MockResponse');
+var   TemplatingMiddleware    = require('../lib/TemplatingMiddleware')
+    , loader                  = new nunjucks.FileSystemLoader('./test/contents/test.ch/templates')
+    , env                     = new nunjucks.Environment(loader, {tags: {variableStart: '{$', variableEnd: '$}'}, dev: true})
+    , container               = { get: function(key){ return env; }};
 
-var loader  = new nunjucks.FileSystemLoader('./test/contents/test.ch/templates'),
-    env     = new nunjucks.Environment(loader, {tags: {variableStart: '{$', variableEnd: '$}'}, dev: true});
-
-var container = {
-    get: function(key){
-        return env;
-    }
-};
-
-function testNullPathRequest(middleware, request, response, status, data, contentType, done){
-        response.on('sent', function() {
-            try {
-                assert.equal(response.status, status);
-                assert.equal(response.data, data);
-                assert.equal(response.contentType, contentType);
-                done();
-            } // never throw an error in this environment
-            catch(err){
-                done(err);
-            }
-        });
-        middleware.request(request, response, function() {
-            it('next should not be called', function() {
-                assert(false);
-            });
-        });
-}
+var   testUtils                 = require('./utils')
+    , MockRequest               = testUtils.MockRequest
+    , MockResponse              = testUtils.MockResponse
+    , testNullPathRequest       = testUtils.testNullPathRequest;
 
 describe('Middleware', function() {
 
