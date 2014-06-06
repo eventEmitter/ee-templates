@@ -23,10 +23,32 @@ describe('Middleware', function() {
 
         , acceptHTML        = {'accept': [{key:'text', value: 'html'}]}
         , acceptPlaintext   = {'accept': [{key:'text', value: 'plain'}]}
+        , acceptXML         = {'accept': [{key:'text', value: 'xml'}]}
+        , acceptAppXML      = {'accept': [{key:'application', value: 'xml'}]}
         , acceptMultiple    = {'accept': [{key:'application', value: 'json'}, {key:'text', value: 'html'}]}
         , acceptNonsense    = {'accept': [{key:'application', value: 'nonsense'}]}
 
         , nullP             = '/null';
+
+    var complexObject       = {
+          name: function(){
+            return 'wayne';
+          }
+        , firstName: 'john'
+        , age: 200
+        , beatsChuckNorris: true
+        , friends: [
+            {
+                fullname: "chuck norris"
+                , id: 1
+            }
+            , {
+                fullname: "captain future"
+                , id: 3
+            }
+        ]
+        , sexRatio: 100.3
+    };
 
 
     describe('an unsatisfiable null path request', function(){
@@ -137,6 +159,66 @@ describe('Middleware', function() {
                         assert.equal('text/plain; charset=utf-8', responsePlaintext.contentType);
                         assert.equal(200, responsePlaintext.status);
                     });
+                });
+            });
+        });
+
+        describe('text/xml', function(){
+            var   requestXML   = new MockRequest('test.ch', '', acceptXML)
+                , responseXML  = new MockResponse();
+
+            middleware.request(requestXML, responseXML, function(){
+                it('should append a rendering method to the response', function(){
+                    assert('render' in responseXML);
+                });
+
+                var expected = '<?xmlversion="1.0"encoding="UTF-8"?><root><name><![CDATA[wayne]]></name><firstName><![CDATA[john]]></firstName><age><![CDATA[200]]></age><beatsChuckNorris><![CDATA[true]]></beatsChuckNorris><friends><fullname><![CDATA[chucknorris]]></fullname><id><![CDATA[1]]></id></friends><friends><fullname><![CDATA[captainfuture]]></fullname><id><![CDATA[3]]></id></friends><sexRatio><![CDATA[100.3]]></sexRatio></root>';
+
+                it('should create xml', function(done){
+                    responseXML.render(200, 'it', {}, complexObject, function(err){
+                        try {
+                            // I dont want to dick around with whitespaces
+                            assert.equal(expected, responseXML.data.replace(/\s*/g, ''));
+                            done();
+                        } catch(ex) {
+                            done(ex);
+                        }
+                    });
+                });
+
+                it('and set the content type accordingly', function(){
+                    assert.equal('text/xml; charset=utf-8', responseXML.contentType);
+                    assert.equal(200, responseXML.status);
+                });
+            });
+        });
+
+        describe('application/xml', function(){
+            var   requestXML   = new MockRequest('test.ch', '', acceptAppXML)
+                , responseXML  = new MockResponse();
+
+            middleware.request(requestXML, responseXML, function(){
+                it('should append a rendering method to the response', function(){
+                    assert('render' in responseXML);
+                });
+
+                var expected = '<?xmlversion="1.0"encoding="UTF-8"?><root><name><![CDATA[wayne]]></name><firstName><![CDATA[john]]></firstName><age><![CDATA[200]]></age><beatsChuckNorris><![CDATA[true]]></beatsChuckNorris><friends><fullname><![CDATA[chucknorris]]></fullname><id><![CDATA[1]]></id></friends><friends><fullname><![CDATA[captainfuture]]></fullname><id><![CDATA[3]]></id></friends><sexRatio><![CDATA[100.3]]></sexRatio></root>';
+
+                it('should create xml', function(done){
+                    responseXML.render(200, 'it', {}, complexObject, function(err){
+                        try {
+                            // I dont want to dick around with whitespaces
+                            assert.equal(expected, responseXML.data.replace(/\s*/g, ''));
+                            done();
+                        } catch(ex) {
+                            done(ex);
+                        }
+                    });
+                });
+
+                it('and set the content type accordingly', function(){
+                    assert.equal('application/xml; charset=utf-8', responseXML.contentType);
+                    assert.equal(200, responseXML.status);
                 });
             });
         });
