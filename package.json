@@ -18,13 +18,15 @@
     , "dependencies": {
           "ee-log"              : "0.2.*"
         , "ee-class"            : "1.0.*"
+        , "ee-types"            : "0.1.*"
         , "ee-event-emitter"    : "0.1.*"
     }
     , "devDependencies": {
           "nunjucks"            : "1.0.*"
         , "mocha"               : "1.18.*"
+        , "ee-event-emitter"     : "0.1.*"
     }
     , "scripts": {
-        "test"                  : "./node_modules/.bin/mocha --reporter spec --check-leaks"
+        "test"                  : "./node_modules/.bin/mocha --reporter spec "
     }
 }

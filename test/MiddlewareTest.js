@@ -1,5 +1,6 @@
 var assert                  = require('assert'),
-    nunjucks                = require('nunjucks');
+    nunjucks                = require('nunjucks'),
+    log                     = require('ee-log');
 
 var TemplatingMiddleware    = require('../lib/TemplatingMiddleware');
 
@@ -15,26 +16,70 @@ var container = {
     }
 };
 
-describe('Middleware', function(){
+function testNullPathRequest(middleware, request, response, status, data, contentType, done){
+        response.on('sent', function() {
+            try {
+                assert.equal(response.status, status);
+                assert.equal(response.data, data);
+                assert.equal(response.contentType, contentType);
+                done();
+            } // never throw an error in this environment
+            catch(err){
+                done(err);
+            }
+        });
+        middleware.request(request, response, function() {
+            it('next should not be called', function() {
+                assert(false);
+            });
+        });
+}
+
+describe('Middleware', function() {
+
+    var   middleware        = new TemplatingMiddleware(container)
+
+        , acceptHTML        = {'accept': [{key:'text', value: 'html'}]}
+        , acceptPlaintext   = {'accept': [{key:'text', value: 'plain'}]}
+        , acceptMultiple    = {'accept': [{key:'application', value: 'json'}, {key:'text', value: 'html'}]}
+        , acceptNonsense    = {'accept': [{key:'application', value: 'nonsense'}]}
+
+        , nullP             = '/null';
+
+
+    describe('an unsatisfiable null path request', function(){
+        var   nonsenseRequest  = new MockRequest('test.ch', '', acceptNonsense , nullP)
+            , nonsenseResponse = new MockResponse();
+
+        it('should bypass propagation and create a 406 error response', function(done){
+            testNullPathRequest(middleware, nonsenseRequest, nonsenseResponse, 406, 'None of the requested accept formats can be served', null, done);
+        });
+    });
+
+    describe('a null path request', function() {
+        var   plainTextRequest  = new MockRequest('test.ch', '', acceptPlaintext, nullP)
+            , plainTextResponse = new MockResponse();
+
+        var   template      = 'test.nullPath.nunjuck.html'
+            , htmlRequest   = new MockRequest('test.ch', template, acceptHTML, nullP)
+            , htmlResponse  = new MockResponse();
+
+        it('should bypass propagation and create appropriate response', function(done){
+            testNullPathRequest(middleware, plainTextRequest, plainTextResponse, 200, '', 'text/plain; charset=utf-8', done);
+        });
+
+        it('should bypass propagation and render', function(done){
+            testNullPathRequest(middleware, htmlRequest, htmlResponse, 200, '<h1>Nullpath</h1>', 'text/html; charset=utf-8', done);
+        });
+    });
+
     describe('request', function(){
-
-        var middleware = new TemplatingMiddleware(container);
-
         describe('text/html', function(){
-            var request = new MockRequest('test.ch', 'test.nunjuck.html',
-                {'accept': [
-                    {key:'text', value: 'html'}
-                ]}
-            );
+            var   request   = new MockRequest('test.ch', 'test.nunjuck.html', acceptHTML)
+                , response  = new MockResponse();
 
-            var requestLanguage = new MockRequest('test.ch', 'test.language.nunjuck.html',
-                {'accept': [
-                    {key:'text', value: 'html'}
-                ]}
-            );
-
-            var response = new MockResponse();
-            var responseLanguage = new MockResponse();
+            var   requestLanguage   = new MockRequest('test.ch', 'test.language.nunjuck.html', acceptHTML)
+                , responseLanguage  = new MockResponse();
 
             middleware.request(request, response, function(){
                 it('should append a rendering method to the response', function(){
@@ -48,7 +93,7 @@ describe('Middleware', function(){
                     });
 
                     it('should set the content type and the status correctly', function(){
-                        assert.equal('text/html; charset=utf8', response.contentType);
+                        assert.equal('text/html; charset=utf-8', response.contentType);
                         assert.equal(200, response.status);
                     });
                 });
@@ -66,7 +111,7 @@ describe('Middleware', function(){
                     });
 
                     it('should set the content type and the status correctly', function(){
-                        assert.equal('text/html; charset=utf8', responseLanguage.contentType);
+                        assert.equal('text/html; charset=utf-8', responseLanguage.contentType);
                         assert.equal(200, responseLanguage.status);
                     });
 
@@ -78,69 +123,53 @@ describe('Middleware', function(){
         });
 
         describe('application/json', function(){
-            var request1 = new MockRequest('test.ch', 'test.nunjuck.html',
-                {'accept': [
-                    {key:'application', value: 'json'},
-                    {key:'text', value: 'html'}
-                ]}
-            );
+            var   requestJSONHTML   = new MockRequest('test.ch', 'test.nunjuck.html', acceptMultiple)
+                , responseJSONHTML  = new MockResponse();
 
-            var response1 = new MockResponse();
-
-            middleware.request(request1, response1, function(){
-                response1.render(200, 'en', {}, {test: 'succeeded'}, function(err){
+            middleware.request(requestJSONHTML, responseJSONHTML, function(){
+                responseJSONHTML.render(200, 'en', {}, {test: 'succeeded'}, function(err){
                     it('if the request has an accept value of application/json it should render it as json, and ignore the template', function(){
                         assert.equal(err, null);
-                        assert.equal('{"test":"succeeded"}', response1.data);
+                        assert.equal('{"test":"succeeded"}', responseJSONHTML.data);
                     });
                     it('should set the content type and the status correctly', function(){
-                        assert.equal('application/json; charset=utf8', response1.contentType);
-                        assert.equal(200, response1.status);
+                        assert.equal('application/json; charset=utf-8', responseJSONHTML.contentType);
+                        assert.equal(200, responseJSONHTML.status);
                     });
                 });
             });
         });
 
         describe('text/plain', function(){
-            var request1 = new MockRequest('test.ch', 'test.nunjuck.html',
-                {'accept': [
-                    {key:'text', value: 'plain'}
-                ]}
-            );
+            var   requestPlaintext  = new MockRequest('test.ch', 'test.nunjuck.html', acceptPlaintext)
+                , responsePlaintext = new MockResponse();
 
-            var response1 = new MockResponse();
-
-            middleware.request(request1, response1, function(){
-                response1.render(200, 'en', {}, {test: 'succeeded'}, function(err){
-                    it('if the request has another accept type it should fallback to json', function(){
+            middleware.request(requestPlaintext, responsePlaintext, function(){
+                responsePlaintext.render(200, 'en', {}, {test: 'succeeded'}, function(err){
+                    it('if the generated data is an object it should be rendered as json', function(){
                         assert(err==null);
-                        assert.equal('{"test":"succeeded"}', response1.data);
+                        assert.equal('{"test":"succeeded"}', responsePlaintext.data);
                     });
 
                     it('should set the content type and the status correctly', function(){
-                        assert.equal('application/json; charset=utf8', response1.contentType);
-                        assert.equal(200, response1.status);
+                        assert.equal('text/plain; charset=utf-8', responsePlaintext.contentType);
+                        assert.equal(200, responsePlaintext.status);
                     });
                 });
             });
         });
 
         describe('on errors', function(){
-            var request1 = new MockRequest('test.ch', 'test.nunjuck.inexistent.html',
-                {'accept': [
-                    {key:'text', value: 'html'}
-                ]}
-            );
+            var   errorRequest  = new MockRequest('test.ch', 'test.nunjuck.inexistent.html', acceptHTML)
+                , errorResponse = new MockResponse();
 
-            var response1 = new MockResponse();
-
-            middleware.request(request1, response1, function(){
-                response1.render(200, 'en', {}, {test: 'succeeded'}, function(err){
+            middleware.request(errorRequest, errorResponse, function(){
+                errorResponse.render(200, 'en', {}, {test: 'succeeded'}, function(err){
                     it('if there happens an error during the rendering it is passed to the callback', function(){
                         assert(!!err);
                     });
                     it('on error the response is equivalent to a server error', function(){
-                        assert.equal(response1.status, 500);
+                        assert.equal(errorResponse.status, 500);
                     });
                 });
             });

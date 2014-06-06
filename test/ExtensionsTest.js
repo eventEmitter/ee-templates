@@ -1,5 +1,5 @@
-var assert = require('assert'),
-    nunjucks = require('nunjucks');
+var assert      = require('assert'),
+    nunjucks    = require('nunjucks');
 
 var loader          = new nunjucks.FileSystemLoader('./test/contents/test.ch/templates'),
     testEnvironment = new nunjucks.Environment(loader, {dev: true});

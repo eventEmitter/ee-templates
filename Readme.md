@@ -28,6 +28,13 @@ are directly attached by the running application.
   - Add a better loader which allows loading the templates asynchronously
   - Improve handling of the mapping between the accept header and the renderer.
 
+##Media Types
+Further readings
+
+  - [Internet Media Types](http://en.wikipedia.org/wiki/Internet_media_type)
+  - [RFC 2616](http://tools.ietf.org/html/rfc2616#page-100)
+  - [MDN: Content-Negotiation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation)
+
 ##Changelog
 
 ### v0.2.0
