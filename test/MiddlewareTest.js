@@ -8,15 +8,14 @@ var   assert                  = require('assert')
  * the current domain. During the tests we use only a single environment and can therefore use a mock container.
  */
 
-var   TemplatingMiddleware    = require('../lib/TemplatingMiddleware')
-    , loader                  = new nunjucks.FileSystemLoader('./test/contents/test.ch/templates')
-    , env                     = new nunjucks.Environment(loader, {tags: {variableStart: '{$', variableEnd: '$}'}, dev: true})
-    , container               = { get: function(key){ return env; }};
-
 var   testUtils                 = require('./utils')
     , MockRequest               = testUtils.MockRequest
     , MockResponse              = testUtils.MockResponse
     , testNullPathRequest       = testUtils.testNullPathRequest;
+
+var   TemplatingMiddleware    = require('../lib/TemplatingMiddleware')
+    , env                     = testUtils.NunjucksTestEnvironment
+    , container               = { get: function(key){ return env; }};
 
 describe('Middleware', function() {
 

@@ -1,10 +1,9 @@
-var assert      = require('assert'),
-    nunjucks    = require('nunjucks');
+var   assert            = require('assert')
+    , nunjucks          = require('nunjucks');
 
-var loader          = new nunjucks.FileSystemLoader('./test/contents/test.ch/templates'),
-    testEnvironment = new nunjucks.Environment(loader, {dev: true});
-
-var extensions      = require('../lib/extensions');
+var   testUtils         = require('./utils')
+    , testEnvironment   = testUtils.NunjucksTestEnvironment
+    , extensions        = require('../lib/extensions');
 
 describe("ApiExtension", function(){
     var testApi = {
