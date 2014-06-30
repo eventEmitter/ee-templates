@@ -172,7 +172,7 @@ describe('Middleware', function() {
                     assert('render' in responseXML);
                 });
 
-                var expected = '<?xmlversion="1.0"encoding="UTF-8"?><root><name><![CDATA[wayne]]></name><firstName><![CDATA[john]]></firstName><age><![CDATA[200]]></age><beatsChuckNorris><![CDATA[true]]></beatsChuckNorris><friends><fullname><![CDATA[chucknorris]]></fullname><id><![CDATA[1]]></id></friends><friends><fullname><![CDATA[captainfuture]]></fullname><id><![CDATA[3]]></id></friends><sexRatio><![CDATA[100.3]]></sexRatio></root>';
+                var expected = '-<?xmlversion="1.0"encoding="UTF-8"?><root><name><![CDATA[wayne]]></name><firstName><![CDATA[john]]></firstName><age><![CDATA[200]]></age><beatsChuckNorris><![CDATA[true]]></beatsChuckNorris><friends><fullname><![CDATA[chucknorris]]></fullname><id><![CDATA[1]]></id></friends><friends><fullname><![CDATA[captainfuture]]></fullname><id><![CDATA[3]]></id></friends><sexRatio><![CDATA[100.3]]></sexRatio></root>';
 
                 it('should create xml', function(done){
                     responseXML.render(200, 'it', {}, complexObject, function(err){
