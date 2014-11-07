@@ -22,6 +22,7 @@
         , "ee-argv"             : "0.1.*"
         , "ee-event-emitter"    : "0.1.*"
         , "js2xmlparser"        : "0.1.*"
+        , "fast-csv"            : "0.5.*"
     }
     , "devDependencies": {
           "nunjucks"            : "1.0.*"
