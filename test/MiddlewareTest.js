@@ -23,6 +23,7 @@ describe('Middleware', function() {
 
         , acceptHTML        = {'accept': [{key:'text', value: 'html'}]}
         , acceptPlaintext   = {'accept': [{key:'text', value: 'plain'}]}
+        , acceptCSV         = {'accept': [{key:'text', value: 'csv'}]}
         , acceptXML         = {'accept': [{key:'text', value: 'xml'}]}
         , acceptAppXML      = {'accept': [{key:'application', value: 'xml'}]}
         , acceptMultiple    = {'accept': [{key:'application', value: 'json'}, {key:'text', value: 'html'}]}
@@ -176,13 +177,8 @@ describe('Middleware', function() {
 
                 it('should create xml', function(done){
                     responseXML.render(200, 'it', {}, complexObject, function(err){
-                        try {
-                            // I dont want to dick around with whitespaces
-                            assert.equal(expected, responseXML.data.replace(/\s*/g, ''));
-                            done();
-                        } catch(ex) {
-                            done(ex);
-                        }
+                        assert.equal(expected, responseXML.data.replace(/\s*/g, ''));
+                        done(err);
                     });
                 });
 
@@ -206,19 +202,93 @@ describe('Middleware', function() {
 
                 it('should create xml', function(done){
                     responseXML.render(200, 'it', {}, complexObject, function(err){
-                        try {
-                            // I dont want to dick around with whitespaces
-                            assert.equal(expected, responseXML.data.replace(/\s*/g, ''));
-                            done();
-                        } catch(ex) {
-                            done(ex);
-                        }
+                        assert.equal(expected, responseXML.data.replace(/\s*/g, ''));
+                        done(err);
                     });
                 });
 
                 it('and set the content type accordingly', function(){
                     assert.equal('application/xml; charset=utf-8', responseXML.contentType);
                     assert.equal(200, responseXML.status);
+                });
+            });
+        });
+
+        describe('text/csv', function(){
+            var   requestCSV   = new MockRequest('test.ch', '', acceptCSV)
+                , responseCSV  = new MockResponse();
+
+            middleware.request(requestCSV, responseCSV, function(){
+                it('should append a rendering method to the response', function(){
+                    assert('render' in responseCSV);
+                });
+
+                var expected = 'name,friends,age,sexy,bag\nJohn,"[""Chuck"",""Arnold""]",100,false,"{""full"":false}"\nBetty,"[""Jenna"",""Gina""]",20,true,"{""full"":true}"';
+
+                it('should fail if csv contains functions', function(done){
+                    responseCSV.render(200, 'it', {}, complexObject, function(err){
+                        assert(err);
+                        assert.equal(responseCSV.status, 500);
+                        responseCSV.isSent = false;
+                        done();
+                    });
+                });
+
+                it('should fail if csv contains literals', function(done){
+                    responseCSV.render(200, 'it', {}, [ null, 'one', 1, true, null ], function(err){
+                        assert(err);
+                        assert.equal(responseCSV.status, 500);
+                        responseCSV.isSent = false;
+                        done();
+                    });
+                });
+
+                it('should skip buffers', function(done){
+                    responseCSV.render(200, 'it', {}, new Buffer('hello world'), function(err){
+                        assert.equal(responseCSV.data, 'hello world');
+                        assert.equal(200, responseCSV.status);
+                        responseCSV.isSent = false;
+                        done(err);
+                    });
+                });
+
+                it('should skip strings as well', function(done){
+                    responseCSV.render(200, 'it', {}, 'hello world', function(err){
+                        assert.equal(responseCSV.data, 'hello world');
+                        assert.equal(200, responseCSV.status);
+                        responseCSV.isSent = false;
+                        done(err);
+                    });
+                });
+
+                it('should create csvs if possible', function(done){
+                    responseCSV.render(200, 'it', {}, [
+                        {
+                              name      : 'John'
+                            , friends   : ['Chuck', 'Arnold']
+                            , age       : 100
+                            , sexy      : false
+                            , bag       : { full: false }
+                        }
+                        ,
+                        {
+                              name      : 'Betty'
+                            , friends   : ['Jenna', 'Gina']
+                            , age       : 20
+                            , sexy      : true
+                            , bag       : { full: true }
+                        }
+                    ], function(err){
+                        assert.equal(responseCSV.data, expected);
+                        assert.equal(200, responseCSV.status);
+                        responseCSV.isSent = false;
+                        done(err);
+                    });
+                });
+
+                it('and set the content type accordingly', function(){
+                    assert.equal('text/csv; charset=utf-8', responseCSV.contentType);
+                    assert.equal(200, responseCSV.status);
                 });
             });
         });
