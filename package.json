@@ -1,7 +1,7 @@
 {
       "name"                    : "ee-templates"
     , "description"             : "Templating integration for the ee-soa-transport-rest based on Nunjucks"
-    , "version"                 : "0.3.12"
+    , "version"                 : "0.3.14"
     , "license"                 : "MIT"
     , "author"                  : "Michael Rüfenacht <ruefe@rcky.ch> (http://www.rcky.ch)"
     , "homepage"                : "https://github.com/eventEmitter/ee-templates"
@@ -22,6 +22,7 @@
         , "ee-argv"             : "0.1.*"
         , "ee-event-emitter"    : "0.1.*"
         , "js2xmlparser"        : "0.1.*"
+        , "fast-csv"            : "0.5.*"
     }
     , "devDependencies": {
           "nunjucks"            : "1.0.*"
