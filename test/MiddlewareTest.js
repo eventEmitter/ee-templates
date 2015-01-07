@@ -52,12 +52,19 @@ describe('Middleware', function() {
     };
 
 
-    describe('an unsatisfiable null path request', function(){
+    describe('an unsatisfiable request', function(){
         var   nonsenseRequest  = new MockRequest('test.ch', '', acceptNonsense , nullP)
             , nonsenseResponse = new MockResponse();
 
+        var   nonsenseRequestWithPath  = new MockRequest('test.ch', '', acceptNonsense , '/patho')
+            , nonsenseResponseWithPath = new MockResponse();
+
+        it('should bypass propagation and create a 406 error response on null paths', function(done){
+            testNullPathRequest(middleware, nonsenseRequest, nonsenseResponse, 406, 'None of the requested accept formats can be served', 'text/plain; charset=utf-8', done);
+        });
+
         it('should bypass propagation and create a 406 error response', function(done){
-            testNullPathRequest(middleware, nonsenseRequest, nonsenseResponse, 406, 'None of the requested accept formats can be served', null, done);
+            testNullPathRequest(middleware, nonsenseRequestWithPath, nonsenseResponseWithPath, 406, 'None of the requested accept formats can be served', 'text/plain; charset=utf-8', done);
         });
     });
 
@@ -122,6 +129,85 @@ describe('Middleware', function() {
 
                     it('should set the content language correctly', function(){
                         assert.equal('it', responseLanguage.getHeader('content-language'));
+                    });
+                });
+            });
+        });
+
+        describe('text/html with status codes', function(){
+
+            var   request   = new MockRequest('test.ch', {'300' : 'test.nunjuck.html', }, acceptHTML, '/')
+                , response  = new MockResponse();
+
+            var   requestWithResolver   = new MockRequest('test.ch', {
+                    resolve: function(state){
+                        if(state == 404) return 'test.404.nunjuck.html';
+                    }
+                }, acceptHTML, '/uuuh')
+                , responseWithResolver  = new MockResponse();
+
+            var   requestWithFallback   = new MockRequest('test.ch', {'200' : 'test.fallback.nunjuck.html' }, acceptHTML, '/')
+                , responseWithFallback  = new MockResponse();
+
+            var   requestWithoutTemplate   = new MockRequest('test.ch', {}, acceptHTML, '/')
+                , responseWithoutTemplate  = new MockResponse();
+
+
+            middleware.request(request, response, function(){
+                it('should append a rendering method to the response', function(){
+                    assert('render' in response);
+                });
+
+                response.render(300, 'en', {}, {ciao: 'Hallo'}, function(err){
+                    it('which resolves the template assigned to the state and renders it', function(){
+                        assert.equal(err, null);
+                        assert.equal('Hallo: Test succeeded.', response.data);
+                    });
+
+                    it('should set the content type and the status correctly', function(){
+                        assert.equal('text/html; charset=utf-8', response.contentType);
+                        assert.equal(300, response.status);
+                    });
+                });
+            });
+
+            middleware.request(requestWithResolver, responseWithResolver, function(){
+                responseWithResolver.render(404, 'en', {}, {name: 'Jonny'}, function(err){
+                    it('should call the resolve method on the template if present', function(){
+                        assert.equal(err, null);
+                        assert.equal('Oooh Jonny you broke the internet.', responseWithResolver.data);
+                    });
+
+                    it('should set the content type and the status correctly', function(){
+                        assert.equal('text/html; charset=utf-8', responseWithResolver.contentType);
+                        assert.equal(404, responseWithResolver.status);
+                    });
+                });
+            });
+
+            middleware.request(requestWithFallback, responseWithFallback, function(){
+                responseWithFallback.render(404, 'en', {}, {name: 'Jonny'}, function(err){
+                    it('should call the resolve method on the template if present', function(){
+                        assert.equal(err, null);
+                        assert.equal('Fallum Backum.', responseWithFallback.data);
+                    });
+
+                    it('should set the content type and the status correctly', function(){
+                        assert.equal('text/html; charset=utf-8', responseWithFallback.contentType);
+                        assert.equal(404, responseWithFallback.status);
+                    });
+                });
+            });
+
+            middleware.request(requestWithoutTemplate, responseWithoutTemplate, function(){
+                responseWithoutTemplate.render(200, 'en', {}, {name: 'Jonny'}, function(err){
+                    it('creates an error if there is no template present', function(){
+                        assert(err);
+                    });
+
+                    it('and sets an error state', function(){
+                        assert.equal('text/plain; charset=utf-8', responseWithoutTemplate.contentType);
+                        assert.equal(500, responseWithoutTemplate.status);
                     });
                 });
             });
@@ -300,7 +386,7 @@ describe('Middleware', function() {
             middleware.request(errorRequest, errorResponse, function(){
                 errorResponse.render(200, 'en', {}, {test: 'succeeded'}, function(err){
                     it('if there happens an error during the rendering it is passed to the callback', function(){
-                        assert(!!err);
+                        assert(err);
                     });
                     it('on error the response is equivalent to a server error', function(){
                         assert.equal(errorResponse.status, 500);

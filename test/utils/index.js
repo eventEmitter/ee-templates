@@ -14,7 +14,7 @@ module.exports.NunjucksTestEnvironment = new nunjucks.Environment(
                                                 new nunjucks.FileSystemLoader(TEST_TEMPLATE_PATH),
                                                 {tags: {variableStart: '{$', variableEnd: '$}'}, dev: true});
 
-module.exports.testNullPathRequest = function(middleware, request, response, status, data, contentType, done){
+module.exports.testNullPathRequest = module.exports.testRequest = function(middleware, request, response, status, data, contentType, done){
     response.on('sent', function() {
         try {
             assert.equal(response.status, status);

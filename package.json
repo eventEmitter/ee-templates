@@ -27,7 +27,6 @@
     , "devDependencies": {
           "nunjucks"            : "1.0.*"
         , "mocha"               : "1.18.*"
-        , "ee-event-emitter"     : "0.1.*"
     }
     , "scripts": {
         "test"                  : "./node_modules/.bin/mocha --reporter spec "
