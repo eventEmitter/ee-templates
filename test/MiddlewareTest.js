@@ -173,9 +173,9 @@ describe('Middleware', function() {
 
             middleware.request(requestWithResolver, responseWithResolver, function(){
                 responseWithResolver.render(404, 'en', {}, {name: 'Jonny'}, function(err){
-                    it('should call the resolve method on the template if present', function(){
+                    it('should call the resolve method on the template if present and pass the status code', function(){
                         assert.equal(err, null);
-                        assert.equal('Oooh Jonny you broke the internet.', responseWithResolver.data);
+                        assert.equal('404 : Oooh Jonny you broke the internet.', responseWithResolver.data);
                     });
 
                     it('should set the content type and the status correctly', function(){
