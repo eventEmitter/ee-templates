@@ -90,6 +90,9 @@ describe('Middleware', function() {
             var   request   = new MockRequest('test.ch', 'test.nunjuck.html', acceptHTML)
                 , response  = new MockResponse();
 
+            var   requestHeader   = new MockRequest('test.ch', 'test.nunjuck.html', acceptHTML)
+                , responseHeader  = new MockResponse();
+
             var   requestLanguage   = new MockRequest('test.ch', 'test.language.nunjuck.html', acceptHTML)
                 , responseLanguage  = new MockResponse();
 
@@ -129,6 +132,21 @@ describe('Middleware', function() {
 
                     it('should set the content language correctly', function(){
                         assert.equal('it', responseLanguage.getHeader('content-language'));
+                    });
+                });
+            });
+
+            middleware.request(requestHeader, responseHeader, function(){
+                it('should append a rendering method to the response', function(){
+                    assert('render' in responseHeader);
+                });
+
+                var headers = {};
+                headers['content-type'] = 'application/json';
+                it('if the service sets a content-type header the rendering should respect that but not set the wrong type', function(done){
+                    responseHeader.render(200, 'it', headers, {ciao: 'Hallo'}, function(err){
+                            assert.equal('{"ciao":"Hallo"}', responseHeader.data);
+                            done(err);
                     });
                 });
             });
