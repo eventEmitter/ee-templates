@@ -154,7 +154,7 @@ describe('Middleware', function() {
 
         describe('text/html with status codes', function(){
 
-            var   request   = new MockRequest('test.ch', {'300' : 'test.nunjuck.html', }, acceptHTML, '/')
+            var   request   = new MockRequest('test.ch', {'300' : 'test.nunjuck.html' }, acceptHTML, '/')
                 , response  = new MockResponse();
 
             var   requestWithResolver   = new MockRequest('test.ch', {
@@ -395,6 +395,24 @@ describe('Middleware', function() {
                     assert.equal(200, responseCSV.status);
                 });
             });
+        });
+
+        describe('no content type', function(){
+
+            var   request   = new MockRequest('test.ch', {'300' : 'test.nunjuck.html' }, {}, '/')
+                , response  = new MockResponse();
+
+            it('should send an error due to a non resolvable renderer', function(done){
+                response.on('sent', function(){
+                    assert(409, response.status);
+                    done();
+                });
+
+                middleware.request(request, response, function(){
+                    assert(false);
+                });
+            });
+
         });
 
         describe('on errors', function(){
