@@ -119,7 +119,7 @@ describe('Middleware', function() {
                     assert('render' in responseLanguage);
                 });
 
-                responseLanguage.render(200, 'it', {}, {ciao: 'Hallo'}, function(err){
+                responseLanguage.render(200, ['it'], {}, {ciao: 'Hallo'}, function(err){
                     it('which resolves the template and renders it with the language available', function(){
                         assert.equal(err, null);
                         assert.equal('Hallo: Test succeeded in it.', responseLanguage.data);
@@ -131,7 +131,7 @@ describe('Middleware', function() {
                     });
 
                     it('should set the content language correctly', function(){
-                        assert.equal('it', responseLanguage.getHeader('content-language'));
+                        assert.equal(['it'], responseLanguage.getHeader('content-language'));
                     });
                 });
             });
