@@ -131,7 +131,7 @@ describe('Middleware', function() {
                     });
 
                     it('should set the content language correctly', function(){
-                        assert.equal(['it'], responseLanguage.getHeader('content-language'));
+                        assert.deepEqual(['it'], responseLanguage.getHeader('content-language'));
                     });
                 });
             });
