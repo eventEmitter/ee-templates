@@ -1,4 +1,6 @@
 #EE-Templates
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/eventEmitter/ee-templates.svg)](https://greenkeeper.io/)
 Templating integration for Nunjucks (Middleware)
 
 ##Middleware
