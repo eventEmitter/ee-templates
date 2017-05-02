@@ -16,17 +16,17 @@
         "templating"
     ]
     , "dependencies": {
-          "ee-log"              : "0.2.*"
-        , "ee-class"            : "1.0.*"
-        , "ee-types"            : "0.1.*"
-        , "ee-argv"             : "0.1.*"
-        , "ee-event-emitter"    : "0.1.*"
-        , "js2xmlparser"        : "0.1.*"
-        , "fast-csv"            : "0.5.*"
+          "ee-log"              : "~2.0.2"
+        , "ee-class"            : "~1.4.0"
+        , "ee-types"            : "~2.1.2"
+        , "ee-argv"             : "~1.0.2"
+        , "ee-event-emitter"    : "~1.0.1"
+        , "js2xmlparser"        : "~3.0.0"
+        , "fast-csv"            : "~2.4.0"
     }
     , "devDependencies": {
-          "nunjucks"            : "1.3.*"
-        , "mocha"               : "1.18.*"
+          "nunjucks"            : "~3.0.0"
+        , "mocha"               : "~3.3.0"
     }
     , "scripts": {
         "test"                  : "./node_modules/.bin/mocha --reporter spec "
